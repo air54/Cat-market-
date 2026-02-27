@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title OP_NET NFT Marketplace
+ * @dev A simplified, high-performance NFT contract with Marketplace logic for Bitcoin Layer 1 (OP_NET).
+ */
+
+contract OpNetNFTMarketplace {
+    string public name = "OP_NET Marketplace";
+    string public symbol = "OPNFT";
+    
+    uint256 private _nextTokenId;
+    address public owner;
+
+    struct Listing {
+        uint256 price;
+        address seller;
+        bool isListed;
+    }
+
+    mapping(uint256 => address) private _owners;
+    mapping(address => uint256) private _balances;
+    mapping(uint256 => Listing) public listings;
+
+    event Minted(address indexed to, uint256 indexed tokenId);
+    event Listed(uint256 indexed tokenId, uint256 price, address indexed seller);
+    event Sale(uint256 indexed tokenId, address indexed buyer, uint256 price);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // 1. MINT: Create a new NFT
+    function mint() public returns (uint256) {
+        uint256 tokenId = _nextTokenId++;
+        _balances[msg.sender] += 1;
+        _owners[tokenId] = msg.sender;
+
+        emit Minted(msg.sender, tokenId);
+        return tokenId;
+    }
+
+    // 2. LIST: Put NFT up for sale
+    function listNFT(uint256 tokenId, uint256 price) public {
+        require(_owners[tokenId] == msg.sender, "You are not the owner");
+        require(price > 0, "Price must be greater than zero");
+
+        listings[tokenId] = Listing(price, msg.sender, true);
+        
+        emit Listed(tokenId, price, msg.sender);
+    }
+
+    // 3. BUY: Purchase a listed NFT
+    function buyNFT(uint256
